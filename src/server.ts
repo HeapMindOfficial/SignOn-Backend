@@ -3,6 +3,7 @@ import type { Server } from 'node:http';
 import { createApp } from './app.js';
 import { connectDb, disconnectDb } from './config/db.js';
 import { env } from './config/env.js';
+import { logger } from './config/logger.js';
 import {
   refreshAllowedOrigins,
   startCorsPolling,
@@ -14,22 +15,25 @@ let shuttingDown = false;
 
 async function main(): Promise<void> {
   await connectDb();
+  logger.info('Connected to MongoDB');
+
   await refreshAllowedOrigins();
   startCorsPolling(env.corsRefreshIntervalMs);
+  logger.info({ intervalMs: env.corsRefreshIntervalMs }, 'CORS rule polling started');
 
   const app = createApp();
   server = app.listen(env.port, () => {
-    console.log(`Server listening on port ${env.port} [${env.nodeEnv}]`);
+    logger.info(`Server listening on port ${env.port} [${env.nodeEnv}]`);
   });
 }
 
 async function shutdown(signal: string): Promise<void> {
   if (shuttingDown) return;
   shuttingDown = true;
-  console.log(`Received ${signal}, shutting down gracefully...`);
+  logger.info(`Received ${signal}, shutting down gracefully...`);
 
   const forceExit = setTimeout(() => {
-    console.error('Graceful shutdown timed out, forcing exit');
+    logger.error('Graceful shutdown timed out, forcing exit');
     process.exit(1);
   }, env.shutdownTimeoutMs);
 
@@ -42,10 +46,10 @@ async function shutdown(signal: string): Promise<void> {
     }
     await disconnectDb();
     clearTimeout(forceExit);
-    console.log('Shutdown complete');
+    logger.info('Shutdown complete');
     process.exit(0);
   } catch (error) {
-    console.error('Error during shutdown:', error);
+    logger.error({ err: error }, 'Error during shutdown');
     clearTimeout(forceExit);
     process.exit(1);
   }
@@ -55,16 +59,16 @@ process.on('SIGINT', () => void shutdown('SIGINT'));
 process.on('SIGTERM', () => void shutdown('SIGTERM'));
 
 process.on('uncaughtException', (error: unknown) => {
-  console.error('Uncaught exception:', error);
+  logger.error({ err: error }, 'Uncaught exception');
   void shutdown('uncaughtException');
 });
 
 process.on('unhandledRejection', (reason: unknown) => {
-  console.error('Unhandled rejection:', reason);
+  logger.error({ err: reason }, 'Unhandled rejection');
   void shutdown('unhandledRejection');
 });
 
 main().catch((error: unknown) => {
-  console.error('Failed to start server:', error);
+  logger.error({ err: error }, 'Failed to start server');
   process.exit(1);
 });

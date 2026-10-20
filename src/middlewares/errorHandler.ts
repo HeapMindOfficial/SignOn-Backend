@@ -53,9 +53,9 @@ export const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
   }
 
   if (isOperational) {
-    console.warn(`[${req.method} ${req.originalUrl}] ${statusCode} ${message}`);
+    req.log.warn({ statusCode, err }, message);
   } else {
-    console.error(`[${req.method} ${req.originalUrl}]`, err);
+    req.log.error({ statusCode, err }, message);
   }
 
   const responseMessage =
