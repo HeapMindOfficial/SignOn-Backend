@@ -3,7 +3,10 @@ import { z } from 'zod';
 import { isValidOrigin } from '../utils/isValidOrigin.js';
 
 const originSchema = z
-  .string()
+  .string({
+    error: (issue) =>
+      issue.input === undefined ? 'Origin is required' : 'Origin must be a string',
+  })
   .trim()
   .min(1, 'Origin is required')
   .refine(isValidOrigin, 'Origin must be a scheme + host only, e.g. https://example.com');
