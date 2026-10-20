@@ -1,0 +1,19 @@
+import 'dotenv/config';
+
+function requireEnv(name: string): string {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(`Missing required environment variable: ${name}`);
+  }
+  return value;
+}
+
+export const env = {
+  nodeEnv: process.env.NODE_ENV ?? 'development',
+  port: Number(process.env.PORT ?? 3000),
+  mongodbUser: requireEnv('MONGODB_USER'),
+  mongodbPassword: requireEnv('MONGODB_PASSWORD'),
+  mongodbUri: requireEnv('MONGODB_URI'),
+  corsRefreshIntervalMs: Number(process.env.CORS_REFRESH_INTERVAL_MS ?? 60_000),
+  shutdownTimeoutMs: Number(process.env.SHUTDOWN_TIMEOUT_MS ?? 10_000),
+};
