@@ -9,6 +9,7 @@ import {
   startCorsPolling,
   stopCorsPolling,
 } from './services/cors.service.js';
+import { seedUniquenessFilters } from './services/uniqueness.service.js';
 
 let server: Server | undefined;
 let shuttingDown = false;
@@ -16,6 +17,8 @@ let shuttingDown = false;
 async function main(): Promise<void> {
   await connectDb();
   logger.info('Connected to MongoDB');
+
+  await seedUniquenessFilters();
 
   await refreshAllowedOrigins();
   startCorsPolling(env.corsRefreshIntervalMs);
