@@ -1,0 +1,2 @@
+export const BLOOM_FILTER_INITIAL_SIZE = 1000;
+export const BLOOM_FILTER_ERROR_RATE = 0.001;

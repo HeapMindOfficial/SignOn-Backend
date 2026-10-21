@@ -1,3 +1,4 @@
+import cookieParser from 'cookie-parser';
 import express, { type Application } from 'express';
 import helmet from 'helmet';
 
@@ -15,6 +16,7 @@ export function createApp(): Application {
   app.use(helmet());
   app.use(corsMiddleware);
   app.use(express.json());
+  app.use(cookieParser());
   app.use(responseHandler);
   app.use('/api', apiRouter);
 
